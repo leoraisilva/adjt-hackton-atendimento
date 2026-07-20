@@ -1,6 +1,6 @@
 package br.com.fiap.atendimento.application.domain.especialista;
 
-import br.com.fiap.atendimento.application.domain.Address;
+import br.com.fiap.atendimento.application.domain.address.Address;
 import br.com.fiap.atendimento.application.domain.Status;
 
 public class Especialista {

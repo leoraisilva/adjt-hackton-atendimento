@@ -1,20 +1,21 @@
-package br.com.fiap.atendimento.application.usecase.inbound.gerar;
+package br.com.fiap.atendimento.application.usecase.inbound.atualizar;
 
 import br.com.fiap.atendimento.application.domain.atendimento.Atendimento;
 import br.com.fiap.atendimento.application.domain.atendimento.Consulta;
 import br.com.fiap.atendimento.application.domain.atendimento.Fluxo;
 import br.com.fiap.atendimento.application.domain.redeservico.unidade.Unidade;
 import br.com.fiap.atendimento.application.domain.usuario.Usuario;
-import br.com.fiap.atendimento.application.usecase.inbound.atualizar.AtualizarInput;
 
-public record GerarInput(
+public record AtualizarInput (
+        String idAtendimento,
         Usuario usuario,
         Unidade unidade,
         Fluxo fluxoAtendimento,
-        Consulta consulta
-) {
-    public static GerarInput from (Atendimento domain) {
-        return new GerarInput(
+        Consulta consulta)
+{
+    public static AtualizarInput from (Atendimento domain) {
+        return new AtualizarInput(
+                domain.getIdAtendimento(),
                 domain.getUsuario(),
                 domain.getUnidade(),
                 domain.getFluxoAtendimento(),
@@ -22,9 +23,9 @@ public record GerarInput(
         );
     }
 
-    public static Atendimento to (GerarInput input) {
+    public static Atendimento to (AtualizarInput input) {
         return new Atendimento.AtendimentoBuilder()
-                .withIdAtendimento(null)
+                .withIdAtendimento(input.idAtendimento())
                 .withUsuario(input.usuario())
                 .withUnidade(input.unidade())
                 .withConsulta(input.consulta())

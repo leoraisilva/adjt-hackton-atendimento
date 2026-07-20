@@ -1,8 +1,8 @@
-package br.com.fiap.atendimento.application.domain;
+package br.com.fiap.atendimento.application.domain.address;
 
 public class Address {
-    private final String ibge;
     private final String cep;
+    private final String codigoMunicipal;
     private final String logradouro;
     private final String complemento;
     private final String bairro;
@@ -11,8 +11,8 @@ public class Address {
     private final String uf;
 
     public Address(AddressBuilder addressBuilder) {
-        this.ibge = addressBuilder.ibge;
         this.cep = addressBuilder.cep;
+        this.codigoMunicipal = addressBuilder.codigoMunicipal;
         this.logradouro = addressBuilder.logradouro;
         this.complemento = addressBuilder.complemento;
         this.bairro = addressBuilder.bairro;
@@ -21,12 +21,12 @@ public class Address {
         this.uf = addressBuilder.uf;
     }
 
-    public String getIbge() {
-        return ibge;
-    }
-
     public String getCep() {
         return cep;
+    }
+
+    public String getCodigoMunicipal () {
+        return codigoMunicipal;
     }
 
     public String getLogradouro() {
@@ -54,8 +54,8 @@ public class Address {
     }
 
     public static class AddressBuilder {
-        private String ibge;
         private String cep;
+        private String codigoMunicipal;
         private String logradouro;
         private String complemento;
         private String bairro;
@@ -63,8 +63,8 @@ public class Address {
         private String estado;
         private String uf;
 
-        public AddressBuilder withIBGE (String ibge) {
-            this.ibge = ibge;
+        public AddressBuilder withCodigoMunicipal (String codigoMunicipal) {
+            this.codigoMunicipal = codigoMunicipal;
             return this;
         }
 

@@ -1,19 +1,20 @@
-package br.com.fiap.atendimento.application.usecase.inbound.gerar;
+package br.com.fiap.atendimento.application.usecase.inbound.buscar;
 
 import br.com.fiap.atendimento.application.domain.atendimento.Atendimento;
 import br.com.fiap.atendimento.application.domain.atendimento.Consulta;
 import br.com.fiap.atendimento.application.domain.atendimento.Fluxo;
 import br.com.fiap.atendimento.application.domain.redeservico.unidade.Unidade;
 import br.com.fiap.atendimento.application.domain.usuario.Usuario;
+import br.com.fiap.atendimento.application.usecase.inbound.atualizar.AtualizarOutput;
 
-public record GerarOutput(
+public record BuscarOutput (
         String idAtendimento,
         Usuario usuario,
         Unidade unidade,
         Fluxo fluxoAtendimento,
         Consulta consulta
 ) {
-    public static Atendimento to (GerarOutput output) {
+    public static Atendimento to (BuscarOutput output) {
         return new Atendimento.AtendimentoBuilder()
                 .withIdAtendimento(output.idAtendimento())
                 .withUsuario(output.usuario())
@@ -23,8 +24,8 @@ public record GerarOutput(
                 .build();
     }
 
-    public static GerarOutput from (Atendimento domain) {
-        return new GerarOutput(
+    public static BuscarOutput from (Atendimento domain) {
+        return new BuscarOutput(
                 domain.getIdAtendimento(),
                 domain.getUsuario(),
                 domain.getUnidade(),
