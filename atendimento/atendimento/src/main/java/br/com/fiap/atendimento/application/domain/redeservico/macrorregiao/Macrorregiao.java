@@ -19,7 +19,7 @@ public class Macrorregiao {
         return idMacro;
     }
 
-    public String getCDMuncipio() {
+    public String getCodigoMunicipio() {
         return codigoMunicipio;
     }
 
@@ -42,7 +42,7 @@ public class Macrorregiao {
             return this;
         }
 
-        public MacrorregiaoBuilder withCDMunicipio (String codigoMunicipio) {
+        public MacrorregiaoBuilder withCodigoMunicipio (String codigoMunicipio) {
             this.codigoMunicipio = codigoMunicipio;
             return this;
         }

@@ -2,7 +2,7 @@ package br.com.fiap.atendimento.application.domain.address;
 
 public class Address {
     private final String cep;
-    private final String codigoMunicipal;
+    private final String codigoMunicipio;
     private final String logradouro;
     private final String complemento;
     private final String bairro;
@@ -12,7 +12,7 @@ public class Address {
 
     public Address(AddressBuilder addressBuilder) {
         this.cep = addressBuilder.cep;
-        this.codigoMunicipal = addressBuilder.codigoMunicipal;
+        this.codigoMunicipio = addressBuilder.codigoMunicipio;
         this.logradouro = addressBuilder.logradouro;
         this.complemento = addressBuilder.complemento;
         this.bairro = addressBuilder.bairro;
@@ -25,8 +25,8 @@ public class Address {
         return cep;
     }
 
-    public String getCodigoMunicipal () {
-        return codigoMunicipal;
+    public String getCodigoMunicipio () {
+        return codigoMunicipio;
     }
 
     public String getLogradouro() {
@@ -55,7 +55,7 @@ public class Address {
 
     public static class AddressBuilder {
         private String cep;
-        private String codigoMunicipal;
+        private String codigoMunicipio;
         private String logradouro;
         private String complemento;
         private String bairro;
@@ -63,8 +63,8 @@ public class Address {
         private String estado;
         private String uf;
 
-        public AddressBuilder withCodigoMunicipal (String codigoMunicipal) {
-            this.codigoMunicipal = codigoMunicipal;
+        public AddressBuilder withCodigoMunicipio (String codigoMunicipio) {
+            this.codigoMunicipio = codigoMunicipio;
             return this;
         }
 

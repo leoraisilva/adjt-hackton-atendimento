@@ -17,8 +17,8 @@ public class AtendimentoEntity {
     private String idUnidade;
     @Column(name = "fluxo")
     private String fluxoAtendimento;
-    @OneToOne(targetEntity = ConsultaEntity.class)
-    @Column(name = "consulta")
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "consulta")
     private ConsultaEntity consulta;
 
     public AtendimentoEntity(String idAtendimento, String idUsuario, String idUnidade, String fluxoAtendimento, ConsultaEntity consulta) {
@@ -31,7 +31,6 @@ public class AtendimentoEntity {
 
     public AtendimentoEntity() {
     }
-
 
     public String getIdAtendimento() {
         return idAtendimento;

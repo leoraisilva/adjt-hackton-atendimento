@@ -15,8 +15,8 @@ public class ConsultaEntity {
     private String responsavel;
     @Column(name = "descricao")
     private String descricao;
-    @OneToMany(targetEntity = ExameEntity.class)
-    @Column(name = "exames")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "exames")
     private List<ExameEntity> exames;
 
     public ConsultaEntity(String idConsulta, String responsavel, String descricao, List<ExameEntity> exames) {

@@ -7,7 +7,7 @@ public class DefaultMacrorregiaoFactory implements MacrorregiaoFactory{
     public Macrorregiao newMacrorregiao(String idMacro, String codigoMunicipio, RedeAtencao redeAtencao, String localidade) {
         return new Macrorregiao.MacrorregiaoBuilder()
                 .withIdMacro(idMacro)
-                .withCDMunicipio(codigoMunicipio)
+                .withCodigoMunicipio(codigoMunicipio)
                 .withRedeAtencao(redeAtencao)
                 .withLocalidade(localidade)
                 .build();
