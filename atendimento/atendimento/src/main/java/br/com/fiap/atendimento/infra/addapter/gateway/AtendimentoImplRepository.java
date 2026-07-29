@@ -6,6 +6,8 @@ import br.com.fiap.atendimento.application.domain.atendimento.Fluxo;
 import br.com.fiap.atendimento.application.domain.especialista.Especialista;
 import br.com.fiap.atendimento.application.domain.redeservico.unidade.Unidade;
 import br.com.fiap.atendimento.application.usecase.outbound.AtendimentoRepository;
+import br.com.fiap.atendimento.infra.addapter.event.consumer.ConsumerFila;
+import br.com.fiap.atendimento.infra.addapter.event.producer.EventFila;
 import br.com.fiap.atendimento.infra.addapter.inbound.fetch.EspecialistaFetch;
 import br.com.fiap.atendimento.infra.addapter.inbound.fetch.RedeAtencaoFetch;
 import br.com.fiap.atendimento.infra.addapter.inbound.fetch.UsuarioFetch;
@@ -35,8 +37,10 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
     private final UsuarioFetch usuarioFetch;
     private final EspecialistaFetch especialistaFetch;
     private final RedeAtencaoFetch redeAtencaoFetch;
+    private final EventFila event;
+    private final ConsumerFila consumer;
 
-    public AtendimentoImplRepository(IAtendimentoMapper atendimentoMapper, AtendimentoJpaRepository atendimentoJpaRepository, ConsultaJpaRepository consultaJpaRepository, ExameJpaRepository exameJpaRepository, UsuarioFetch usuarioFetch, EspecialistaFetch especialistaFetch, RedeAtencaoFetch redeAtencaoFetch) {
+    public AtendimentoImplRepository(IAtendimentoMapper atendimentoMapper, AtendimentoJpaRepository atendimentoJpaRepository, ConsultaJpaRepository consultaJpaRepository, ExameJpaRepository exameJpaRepository, UsuarioFetch usuarioFetch, EspecialistaFetch especialistaFetch, RedeAtencaoFetch redeAtencaoFetch, EventFila event, ConsumerFila consumer) {
         this.atendimentoMapper = atendimentoMapper;
         this.atendimentoJpaRepository = atendimentoJpaRepository;
         this.consultaJpaRepository = consultaJpaRepository;
@@ -44,6 +48,8 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
         this.usuarioFetch = usuarioFetch;
         this.especialistaFetch = especialistaFetch;
         this.redeAtencaoFetch = redeAtencaoFetch;
+        this.event = event;
+        this.consumer = consumer;
     }
 
     @Override
@@ -59,7 +65,7 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
         Especialista responsavel = null;
         List<Especialista> especialistas = List.of();
 
-        if (input.getConsulta() != null) {
+        if (input.getConsulta().getIdConsulta() != null) {
             var consulta = input.getConsulta();
             responsavel = EspecialistaDTO.to(especialistaFetch.buscar(consulta.getResponsavel().getIdEspecialista()));
             var exames = Optional.ofNullable(consulta.getExames())
@@ -91,6 +97,8 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
                 input.getFluxoAtendimento().name(),
                 consultaEntity
         );
+
+        event.enviar(Fluxo.GERAR.name(), String.valueOf(atendimentoEntity));
 
         return atendimentoMapper.toDomain(atendimentoJpaRepository.save(atendimentoEntity), usuario, unidade, responsavel, especialistas);
     }

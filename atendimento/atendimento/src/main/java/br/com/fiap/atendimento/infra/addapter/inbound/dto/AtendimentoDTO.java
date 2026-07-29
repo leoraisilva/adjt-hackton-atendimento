@@ -16,4 +16,14 @@ public record AtendimentoDTO(String idAtendimento, String usuario, String unidad
                 .withIdAtendimento(atendimentoDTO.idAtendimento())
                 .build();
     }
+
+    public static Atendimento toFila(AtendimentoDTO atendimentoDTO, String topic){
+        return new Atendimento.AtendimentoBuilder()
+                .withConsulta(ConsultaDTO.to(atendimentoDTO.consulta))
+                .withFluxo(Fluxo.valueOf(topic))
+                .withUnidade(new Unidade.UnidadeBuilder().withIdUnidade(atendimentoDTO.unidade()).build())
+                .withUsuario(new Usuario.UsuarioBuilder().withIdUsuario(atendimentoDTO.usuario()).build())
+                .withIdAtendimento(atendimentoDTO.idAtendimento())
+                .build();
+    }
 }

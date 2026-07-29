@@ -24,6 +24,15 @@ public class Mapper implements IAtendimentoMapper, IConsultaMapper, IExameMapper
 
     @Override
     public Atendimento toDomain(AtendimentoEntity entity, Usuario usuario, Unidade unidade, Especialista responsavel, List<Especialista> especialistas) {
+        if(responsavel == null) {
+            return atendimentoFactory.newAtendimento(
+                    entity.getIdAtendimento(),
+                    usuario,
+                    unidade,
+                    Fluxo.valueOf(entity.getFluxoAtendimento()),
+                    null
+            );
+        }
         return atendimentoFactory.newAtendimento(
                 entity.getIdAtendimento(),
                 usuario,
