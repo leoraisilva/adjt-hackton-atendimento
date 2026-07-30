@@ -58,8 +58,6 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
 
         var usuario = UsuarioDTO.to(usuarioFetch.getUsurio(input.getUsuario().getIdUsuario()));
         var unidade = UnidadeDTO.to(redeAtencaoFetch.buscarUnidade(input.getUnidade().getIdUnidade()).unidade());
-        System.out.println(unidade.getIdUnidade());
-
 
         ConsultaEntity consultaEntity = null;
         Especialista responsavel = null;
@@ -98,7 +96,7 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
                 consultaEntity
         );
 
-        event.enviar(Fluxo.GERAR.name(), String.valueOf(atendimentoEntity));
+        event.enviar(Fluxo.GERAR.name(),  String.valueOf(atendimentoEntity));
 
         return atendimentoMapper.toDomain(atendimentoJpaRepository.save(atendimentoEntity), usuario, unidade, responsavel, especialistas);
     }
@@ -219,4 +217,42 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
 
         return resultado;
     }
+
+    private Atendimento definir (Atendimento atendimento) {
+
+        var address = redeAtencaoFetch.enderecar(UnidadeDTO.from(atendimento.getUnidade()));
+        var especialista = especialistaFetch.localizar(address.cep());
+        if (atendimento.getConsulta() != null) {
+            var consultaEntity = new ConsultaEntity(
+                    UUID.randomUUID().toString(),
+                    especialista.idEspecialista(),
+                    "Passando Primeira vez na Consulta",
+                    new ArrayList<>()
+            );
+            var atendimentoEntity = new AtendimentoEntity(
+                    atendimento.getIdAtendimento(),
+                    atendimento.getUsuario().getIdUsuario(),
+                    atendimento.getUnidade().getIdUnidade(),
+                    atendimento.getFluxoAtendimento().name(),
+                    consultaEntity
+            );
+            atendimentoJpaRepository.save(atendimentoEntity);
+            return atendimentoMapper.toDomain(atendimentoEntity, atendimento.getUsuario(), atendimento.getUnidade(), EspecialistaDTO.to(especialista), List.of());
+        }
+
+        return atendimento;
+    }
+
+    private Atendimento passar (Atendimento atendimento, List<String> especializacao) {
+        if(atendimento.getConsulta().getExames().isEmpty()) {
+            for(var exame : especializacao) {
+                var analise = new ExameEntity(
+                        UUID.randomUUID().toString(),
+                        exame,
+                        "especialista"
+                );
+            }
+        }
+    }
+
 }

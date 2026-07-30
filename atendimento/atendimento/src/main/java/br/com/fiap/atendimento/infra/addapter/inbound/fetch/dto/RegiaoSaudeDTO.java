@@ -16,4 +16,15 @@ public record RegiaoSaudeDTO(String idRegiaoSaude, Regiao regiao, MacrorregiaoDT
                 .withMacrorregiao(MacrorregiaoDTO.to(regiaoSaudeDTO.macrorregiao()))
                 .build();
     }
+    public static RegiaoSaudeDTO from (RegiaoSaude regiaoSaude) {
+        if (regiaoSaude == null) {
+            return null;
+        }
+        return new RegiaoSaudeDTO(
+                regiaoSaude.getIdRegiaoSaude(),
+                regiaoSaude.getRegiao(),
+                MacrorregiaoDTO.from(regiaoSaude.getMacrorregiao())
+        );
+    }
+
 }

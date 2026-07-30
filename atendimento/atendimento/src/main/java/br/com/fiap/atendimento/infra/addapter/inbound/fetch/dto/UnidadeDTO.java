@@ -16,4 +16,17 @@ public record UnidadeDTO (String idUnidade, String nome, int numero, String comp
                 .withRegiaoSaude(RegiaoSaudeDTO.to(unidadeDTO.regiaoSaude()))
                 .build();
     }
+
+    public static UnidadeDTO from (Unidade unidade) {
+        return new UnidadeDTO(
+                unidade.getIdUnidade(),
+                unidade.getNome(),
+                unidade.getNumero(),
+                unidade.getComplemento(),
+                unidade.getLogradouro(),
+                unidade.getBairro(),
+                unidade.getStatus(),
+                RegiaoSaudeDTO.from(unidade.getRegiaoSaude())
+        );
+    }
 }

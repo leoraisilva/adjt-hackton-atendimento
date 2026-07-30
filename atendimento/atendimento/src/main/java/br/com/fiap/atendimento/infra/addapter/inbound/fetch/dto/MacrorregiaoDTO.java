@@ -12,4 +12,13 @@ public record MacrorregiaoDTO(String idMacro, String codigoMunicipio, RedeAtenca
                 .withLocalidade(macrorregiaoDTO.localidade())
                 .build();
     }
+
+    public static MacrorregiaoDTO from (Macrorregiao macrorregiao) {
+        return new MacrorregiaoDTO(
+                macrorregiao.getIdMacro(),
+                macrorregiao.getCodigoMunicipio(),
+                RedeAtencaoDTO.from(macrorregiao.getRedeAtencao()),
+                macrorregiao.getLocalidade()
+        );
+    }
 }

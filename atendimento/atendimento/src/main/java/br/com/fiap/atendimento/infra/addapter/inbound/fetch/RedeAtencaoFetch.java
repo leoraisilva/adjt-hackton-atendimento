@@ -2,6 +2,7 @@ package br.com.fiap.atendimento.infra.addapter.inbound.fetch;
 
 import br.com.fiap.atendimento.application.domain.redeservico.territorio.Territorio;
 import br.com.fiap.atendimento.application.domain.redeservico.unidade.Unidade;
+import br.com.fiap.atendimento.infra.addapter.inbound.fetch.dto.AddressDTO;
 import br.com.fiap.atendimento.infra.addapter.inbound.fetch.dto.TerritorioDTO;
 import br.com.fiap.atendimento.infra.addapter.inbound.fetch.dto.UnidadeDTO;
 import br.com.fiap.atendimento.infra.addapter.inbound.fetch.dto.UnidadeResponseDTO;
@@ -24,5 +25,8 @@ public interface RedeAtencaoFetch {
     TerritorioDTO localizarTerritorio(@PathVariable(value = "id") String id);
 
     @GetMapping(value = "/unidade/comparar")
-    List<UnidadeResponseDTO> comparar(@RequestBody Territorio territorio);
+    List<UnidadeResponseDTO> comparar(@RequestBody AddressDTO addressDTO);
+
+    @GetMapping(value = "/territorio/enderecar")
+    AddressDTO enderecar(@RequestBody UnidadeDTO unidadeDTO);
 }

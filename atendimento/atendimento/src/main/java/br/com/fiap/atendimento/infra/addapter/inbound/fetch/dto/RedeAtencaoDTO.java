@@ -14,4 +14,15 @@ public record RedeAtencaoDTO (String idRede, String responsavel, TipoServico tip
                 .withEstado(redeAtencaoDTO.estado())
                 .build();
     }
+
+    public static RedeAtencaoDTO from (RedeAtencao redeAtencao) {
+        return new RedeAtencaoDTO(
+                redeAtencao.getIdRede(),
+                redeAtencao.getResponsavel(),
+                redeAtencao.getTipo(),
+                redeAtencao.getDescricao(),
+                redeAtencao.getUf(),
+                redeAtencao.getEstado()
+        );
+    }
 }
