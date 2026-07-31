@@ -48,4 +48,5 @@ public class ExameEntity {
     public void setEspecialista(String especialista) {
         this.especialista = especialista;
     }
+
 }

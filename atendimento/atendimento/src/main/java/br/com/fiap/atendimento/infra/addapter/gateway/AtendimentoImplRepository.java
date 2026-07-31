@@ -1,12 +1,9 @@
 package br.com.fiap.atendimento.infra.addapter.gateway;
 
 import br.com.fiap.atendimento.application.domain.atendimento.Atendimento;
-import br.com.fiap.atendimento.application.domain.atendimento.Exame;
 import br.com.fiap.atendimento.application.domain.atendimento.Fluxo;
 import br.com.fiap.atendimento.application.domain.especialista.Especialista;
-import br.com.fiap.atendimento.application.domain.redeservico.unidade.Unidade;
 import br.com.fiap.atendimento.application.usecase.outbound.AtendimentoRepository;
-import br.com.fiap.atendimento.infra.addapter.event.consumer.ConsumerFila;
 import br.com.fiap.atendimento.infra.addapter.event.producer.EventFila;
 import br.com.fiap.atendimento.infra.addapter.inbound.dto.AtendimentoDTO;
 import br.com.fiap.atendimento.infra.addapter.inbound.dto.MarcarDTO;
@@ -17,8 +14,6 @@ import br.com.fiap.atendimento.infra.addapter.inbound.fetch.dto.EspecialistaDTO;
 import br.com.fiap.atendimento.infra.addapter.inbound.fetch.dto.UnidadeDTO;
 import br.com.fiap.atendimento.infra.addapter.inbound.fetch.dto.UsuarioDTO;
 import br.com.fiap.atendimento.infra.addapter.inbound.mapper.IAtendimentoMapper;
-import br.com.fiap.atendimento.infra.addapter.inbound.mapper.IConsultaMapper;
-import br.com.fiap.atendimento.infra.addapter.inbound.mapper.IExameMapper;
 import br.com.fiap.atendimento.infra.addapter.outbound.persistent.entity.AtendimentoEntity;
 import br.com.fiap.atendimento.infra.addapter.outbound.persistent.entity.ConsultaEntity;
 import br.com.fiap.atendimento.infra.addapter.outbound.persistent.entity.ExameEntity;
@@ -40,9 +35,8 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
     private final EspecialistaFetch especialistaFetch;
     private final RedeAtencaoFetch redeAtencaoFetch;
     private final EventFila event;
-    private final ConsumerFila consumer;
 
-    public AtendimentoImplRepository(IAtendimentoMapper atendimentoMapper, AtendimentoJpaRepository atendimentoJpaRepository, ConsultaJpaRepository consultaJpaRepository, ExameJpaRepository exameJpaRepository, UsuarioFetch usuarioFetch, EspecialistaFetch especialistaFetch, RedeAtencaoFetch redeAtencaoFetch, EventFila event, ConsumerFila consumer) {
+    public AtendimentoImplRepository(IAtendimentoMapper atendimentoMapper, AtendimentoJpaRepository atendimentoJpaRepository, ConsultaJpaRepository consultaJpaRepository, ExameJpaRepository exameJpaRepository, UsuarioFetch usuarioFetch, EspecialistaFetch especialistaFetch, RedeAtencaoFetch redeAtencaoFetch, EventFila event) {
         this.atendimentoMapper = atendimentoMapper;
         this.atendimentoJpaRepository = atendimentoJpaRepository;
         this.consultaJpaRepository = consultaJpaRepository;
@@ -51,7 +45,6 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
         this.especialistaFetch = especialistaFetch;
         this.redeAtencaoFetch = redeAtencaoFetch;
         this.event = event;
-        this.consumer = consumer;
     }
 
     @Override
@@ -69,9 +62,9 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
                 null
         );
 
-        event.enviar(Fluxo.GERAR.name(),  String.valueOf(atendimentoEntity));
-
-        return atendimentoMapper.toDomain(atendimentoJpaRepository.save(atendimentoEntity), usuario, unidade, null, null);
+        var atendimentoMessage = atendimentoMapper.toDomain(atendimentoJpaRepository.save(atendimentoEntity), usuario, unidade, null, null);
+        event.enviar(Fluxo.GERAR.name(),  atendimentoMessage);
+        return atendimentoMessage;
     }
 
     @Override
@@ -146,10 +139,17 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
         var atendimento = atendimentoJpaRepository.findById(idAtendimento).orElseThrow(() -> new RuntimeException("Erro ao encontrar Atendimento!!"));
         var usuario = UsuarioDTO.to(usuarioFetch.getUsurio(atendimento.getIdUsuario()));
         var unidade = UnidadeDTO.to(redeAtencaoFetch.buscarUnidade(atendimento.getIdUnidade()).unidade());
-        var responsavel = EspecialistaDTO.to(especialistaFetch.buscar(atendimento.getConsulta().getResponsavel()));
-        List<Especialista> especialistas = atendimento.getConsulta().getExames().stream()
-                .map(consultaMapper -> EspecialistaDTO.to(especialistaFetch.buscar(consultaMapper.getEspecialista())))
-                .toList();
+        Especialista responsavel = null;
+        List<Especialista> especialistas = List.of();
+        if (atendimento.getConsulta() != null) {
+            responsavel = EspecialistaDTO.to(especialistaFetch.buscar(atendimento.getConsulta().getResponsavel()));
+
+            if (!atendimento.getConsulta().getExames().isEmpty()) {
+                especialistas  = atendimento.getConsulta().getExames().stream()
+                        .map(e -> EspecialistaDTO.to(especialistaFetch.buscar(e.getEspecialista())))
+                        .toList();
+            }
+        }
 
         return atendimentoMapper.toDomain(atendimento, usuario, unidade, responsavel, especialistas);
     }
@@ -162,11 +162,17 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
         atendimento = atendimentoJpaRepository.save(atendimento);
         var usuario = UsuarioDTO.to(usuarioFetch.getUsurio(atendimento.getIdUsuario()));
         var unidade = UnidadeDTO.to(redeAtencaoFetch.buscarUnidade(atendimento.getIdUnidade()).unidade());
-        var responsavel = EspecialistaDTO.to(especialistaFetch.buscar(atendimento.getConsulta().getResponsavel()));
-        List<Especialista> especialistas = atendimento.getConsulta().getExames().stream()
-                .map(c -> EspecialistaDTO.to(especialistaFetch.buscar(c.getEspecialista())))
-                .toList();
+        Especialista responsavel = null;
+        List<Especialista> especialistas = List.of();
+        if (atendimento.getConsulta() != null) {
+            responsavel = EspecialistaDTO.to(especialistaFetch.buscar(atendimento.getConsulta().getResponsavel()));
 
+            if (!atendimento.getConsulta().getExames().isEmpty()) {
+                especialistas  = atendimento.getConsulta().getExames().stream()
+                        .map(e -> EspecialistaDTO.to(especialistaFetch.buscar(e.getEspecialista())))
+                        .toList();
+            }
+        }
         return atendimentoMapper.toDomain(atendimento, usuario, unidade, responsavel, especialistas);
     }
 
@@ -179,12 +185,17 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
 
             var usuario = UsuarioDTO.to(usuarioFetch.getUsurio(entity.getIdUsuario()));
             var unidade = UnidadeDTO.to(redeAtencaoFetch.buscarUnidade(entity.getIdUnidade()).unidade());
-            var responsavel = EspecialistaDTO.to(especialistaFetch.buscar(entity.getConsulta().getResponsavel()));
+            Especialista responsavel = null;
+            List<Especialista> especialistas = List.of();
+            if (entity.getConsulta() != null) {
+                responsavel = EspecialistaDTO.to(especialistaFetch.buscar(entity.getConsulta().getResponsavel()));
 
-            var especialistas = entity.getConsulta().getExames().stream()
-                    .map(e -> EspecialistaDTO.to(especialistaFetch.buscar(e.getEspecialista())))
-                    .toList();
-
+                if (!entity.getConsulta().getExames().isEmpty()) {
+                    especialistas  = entity.getConsulta().getExames().stream()
+                            .map(e -> EspecialistaDTO.to(especialistaFetch.buscar(e.getEspecialista())))
+                            .toList();
+                }
+            }
             resultado.add(atendimentoMapper.toDomain(entity, usuario, unidade, responsavel, especialistas));
         }
 
@@ -213,6 +224,8 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
         return atendimentoMapper.toDomain(atendimentoEntity, usuario, unidade, especialista, null);
     }
 
+    @Override
+    @Transactional
     public Atendimento definir (Atendimento atendimento) {
 
         var address = redeAtencaoFetch.enderecar(UnidadeDTO.from(atendimento.getUnidade()));
@@ -238,6 +251,8 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
         return atendimento;
     }
 
+    @Override
+    @Transactional
     public Atendimento passar (Atendimento atendimento, List<String> especializacao) {
         List<ExameEntity> exames = new ArrayList<>();
         if(atendimento.getConsulta().getExames().isEmpty()) {

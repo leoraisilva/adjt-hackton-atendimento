@@ -71,4 +71,5 @@ public class AtendimentoEntity {
     public void setConsulta(ConsultaEntity consulta) {
         this.consulta = consulta;
     }
+
 }

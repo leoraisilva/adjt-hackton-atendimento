@@ -1,17 +1,17 @@
 package br.com.fiap.atendimento.infra.addapter.event.producer;
 
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class EventFila {
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public EventFila(KafkaTemplate<String, String> kafkaTemplate) {
+    public EventFila(KafkaTemplate<String, Object> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void enviar(String topic, String valor) {
+    public void enviar(String topic, Object valor) {
         kafkaTemplate.send(topic, valor);
     }
 }

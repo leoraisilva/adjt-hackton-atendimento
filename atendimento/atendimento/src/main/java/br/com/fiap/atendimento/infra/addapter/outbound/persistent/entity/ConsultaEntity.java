@@ -59,4 +59,5 @@ public class ConsultaEntity {
     public void setExames(List<ExameEntity> exames) {
         this.exames = exames;
     }
+
 }

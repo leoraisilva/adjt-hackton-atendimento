@@ -8,6 +8,7 @@ import br.com.fiap.atendimento.application.usecase.inbound.buscar.Buscar;
 import br.com.fiap.atendimento.application.usecase.inbound.cancelar.Cancelar;
 import br.com.fiap.atendimento.application.usecase.inbound.gerar.Gerar;
 import br.com.fiap.atendimento.application.usecase.inbound.listar.Listar;
+import br.com.fiap.atendimento.application.usecase.inbound.marcar.Marcar;
 import br.com.fiap.atendimento.application.usecase.outbound.AtendimentoRepository;
 import br.com.fiap.atendimento.infra.addapter.event.consumer.ConsumerFila;
 import br.com.fiap.atendimento.infra.addapter.event.producer.EventFila;
@@ -53,13 +54,18 @@ public class AtendimentoConfig {
     }
 
     @Bean
+    Marcar marcar(AtendimentoPort atendimentoPort) {
+        return new Marcar(atendimentoPort);
+    }
+
+    @Bean
     AtendimentoPort atendimentoPort(AtendimentoRepository atendimentoRepository) {
         return new AtendimentoService(atendimentoRepository);
     }
 
     @Bean
-    AtendimentoRepository atendimentoRepository(IAtendimentoMapper atendimentoMapper, AtendimentoJpaRepository atendimentoJpaRepository, ConsultaJpaRepository consultaJpaRepository, ExameJpaRepository exameJpaRepository, UsuarioFetch usuarioFetch, EspecialistaFetch especialistaFetch, RedeAtencaoFetch redeAtencaoFetch, EventFila event, ConsumerFila consumer) {
-        return new AtendimentoImplRepository(atendimentoMapper, atendimentoJpaRepository, consultaJpaRepository, exameJpaRepository, usuarioFetch, especialistaFetch, redeAtencaoFetch, event, consumer);
+    AtendimentoRepository atendimentoRepository(IAtendimentoMapper atendimentoMapper, AtendimentoJpaRepository atendimentoJpaRepository, ConsultaJpaRepository consultaJpaRepository, ExameJpaRepository exameJpaRepository, UsuarioFetch usuarioFetch, EspecialistaFetch especialistaFetch, RedeAtencaoFetch redeAtencaoFetch, EventFila event) {
+        return new AtendimentoImplRepository(atendimentoMapper, atendimentoJpaRepository, consultaJpaRepository, exameJpaRepository, usuarioFetch, especialistaFetch, redeAtencaoFetch, event);
     }
 
     @Bean
