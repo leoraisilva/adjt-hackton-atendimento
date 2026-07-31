@@ -18,4 +18,7 @@ public interface EspecialistaFetch {
 
     @GetMapping(value = "/localizar/{cep}")
     EspecialistaDTO localizar(@PathVariable(value = "cep") String cep);
+
+    @GetMapping(value = "/examinar/{especializacao}")
+    List<EspecialistaDTO> examinar(@PathVariable(value = "especializacao") String especializacao);
 }

@@ -8,6 +8,8 @@ import br.com.fiap.atendimento.application.domain.redeservico.unidade.Unidade;
 import br.com.fiap.atendimento.application.usecase.outbound.AtendimentoRepository;
 import br.com.fiap.atendimento.infra.addapter.event.consumer.ConsumerFila;
 import br.com.fiap.atendimento.infra.addapter.event.producer.EventFila;
+import br.com.fiap.atendimento.infra.addapter.inbound.dto.AtendimentoDTO;
+import br.com.fiap.atendimento.infra.addapter.inbound.dto.MarcarDTO;
 import br.com.fiap.atendimento.infra.addapter.inbound.fetch.EspecialistaFetch;
 import br.com.fiap.atendimento.infra.addapter.inbound.fetch.RedeAtencaoFetch;
 import br.com.fiap.atendimento.infra.addapter.inbound.fetch.UsuarioFetch;
@@ -59,46 +61,17 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
         var usuario = UsuarioDTO.to(usuarioFetch.getUsurio(input.getUsuario().getIdUsuario()));
         var unidade = UnidadeDTO.to(redeAtencaoFetch.buscarUnidade(input.getUnidade().getIdUnidade()).unidade());
 
-        ConsultaEntity consultaEntity = null;
-        Especialista responsavel = null;
-        List<Especialista> especialistas = List.of();
-
-        if (input.getConsulta().getIdConsulta() != null) {
-            var consulta = input.getConsulta();
-            responsavel = EspecialistaDTO.to(especialistaFetch.buscar(consulta.getResponsavel().getIdEspecialista()));
-            var exames = Optional.ofNullable(consulta.getExames())
-                    .orElse(List.of());
-            especialistas = exames.stream()
-                    .map(exame -> EspecialistaDTO.to(especialistaFetch.buscar(exame.getEspecialista().getIdEspecialista())))
-                    .toList();
-
-            var exameEntity = exames.stream()
-                    .map(exame -> new ExameEntity(
-                            UUID.randomUUID().toString(),
-                            exame.getArea(),
-                            exame.getEspecialista().getIdEspecialista()
-                    ))
-                    .toList();
-
-            consultaEntity = new ConsultaEntity(
-                    UUID.randomUUID().toString(),
-                    consulta.getResponsavel().getIdEspecialista(),
-                    consulta.getDescricao(),
-                    exameEntity
-            );
-        }
-
         var atendimentoEntity = new AtendimentoEntity(
                 UUID.randomUUID().toString(),
                 input.getUsuario().getIdUsuario(),
                 input.getUnidade().getIdUnidade(),
                 input.getFluxoAtendimento().name(),
-                consultaEntity
+                null
         );
 
         event.enviar(Fluxo.GERAR.name(),  String.valueOf(atendimentoEntity));
 
-        return atendimentoMapper.toDomain(atendimentoJpaRepository.save(atendimentoEntity), usuario, unidade, responsavel, especialistas);
+        return atendimentoMapper.toDomain(atendimentoJpaRepository.save(atendimentoEntity), usuario, unidade, null, null);
     }
 
     @Override
@@ -218,7 +191,29 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
         return resultado;
     }
 
-    private Atendimento definir (Atendimento atendimento) {
+    @Override
+    @Transactional
+    public Atendimento marcar(Atendimento atendimento, List<String> exames) {
+        var atendimentoEntity = atendimentoJpaRepository.findById(atendimento.getIdAtendimento()).orElseThrow(() -> new RuntimeException("Atendimento não encontrado!!"));
+        atendimentoEntity.setIdUsuario(atendimento.getUsuario().getIdUsuario());
+        atendimentoEntity.setIdUnidade(atendimento.getUnidade().getIdUnidade());
+        atendimentoEntity.setFluxoAtendimento(Fluxo.MARCAR.name());
+        atendimentoEntity.setConsulta(
+                new ConsultaEntity(
+                        atendimento.getConsulta().getIdConsulta(),
+                        atendimento.getConsulta().getResponsavel().getIdEspecialista(),
+                        atendimento.getConsulta().getDescricao(),
+                        null
+                ));
+        var usuario = UsuarioDTO.to(usuarioFetch.getUsurio(atendimentoEntity.getIdUsuario()));
+        var unidade = UnidadeDTO.to(redeAtencaoFetch.buscarUnidade(atendimentoEntity.getIdUnidade()).unidade());
+        var especialista = EspecialistaDTO.to(especialistaFetch.buscar(atendimentoEntity.getConsulta().getResponsavel()));
+        var fila = new MarcarDTO(AtendimentoDTO.from(atendimentoMapper.toDomain(atendimentoEntity, usuario, unidade, especialista, null)), exames);
+        event.enviar(Fluxo.EXAME.name(),  String.valueOf(fila));
+        return atendimentoMapper.toDomain(atendimentoEntity, usuario, unidade, especialista, null);
+    }
+
+    public Atendimento definir (Atendimento atendimento) {
 
         var address = redeAtencaoFetch.enderecar(UnidadeDTO.from(atendimento.getUnidade()));
         var especialista = especialistaFetch.localizar(address.cep());
@@ -233,7 +228,7 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
                     atendimento.getIdAtendimento(),
                     atendimento.getUsuario().getIdUsuario(),
                     atendimento.getUnidade().getIdUnidade(),
-                    atendimento.getFluxoAtendimento().name(),
+                    Fluxo.MARCAR.name(),
                     consultaEntity
             );
             atendimentoJpaRepository.save(atendimentoEntity);
@@ -243,16 +238,38 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
         return atendimento;
     }
 
-    private Atendimento passar (Atendimento atendimento, List<String> especializacao) {
+    public Atendimento passar (Atendimento atendimento, List<String> especializacao) {
+        List<ExameEntity> exames = new ArrayList<>();
         if(atendimento.getConsulta().getExames().isEmpty()) {
+            List<EspecialistaDTO> especialistas = new ArrayList<>();
             for(var exame : especializacao) {
+                var especialista = especialistaFetch.examinar(exame).stream()
+                        .max(Comparator.comparingLong(EspecialistaDTO::disponibilidade))
+                        .orElseThrow(() -> new RuntimeException("Fila indisponivel!!"));
                 var analise = new ExameEntity(
                         UUID.randomUUID().toString(),
                         exame,
-                        "especialista"
+                        especialista.idEspecialista()
                 );
+                especialistas.add(especialista);
+                exames.add(analise);
             }
+            var atendimentoEntity = new AtendimentoEntity(
+                    atendimento.getIdAtendimento(),
+                    atendimento.getUsuario().getIdUsuario(),
+                    atendimento.getUnidade().getIdUnidade(),
+                    Fluxo.RETORNO.name(),
+                    new ConsultaEntity(
+                            atendimento.getConsulta().getIdConsulta(),
+                            atendimento.getConsulta().getResponsavel().getIdEspecialista(),
+                            atendimento.getConsulta().getDescricao(),
+                            exames
+                    )
+            );
+            atendimentoJpaRepository.save(atendimentoEntity);
+            return atendimentoMapper.toDomain(atendimentoEntity, atendimento.getUsuario(), atendimento.getUnidade(), atendimento.getConsulta().getResponsavel(), especialistas.stream().map(EspecialistaDTO::to).toList());
         }
+        return atendimento;
     }
 
 }

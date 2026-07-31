@@ -17,13 +17,13 @@ public record AtendimentoDTO(String idAtendimento, String usuario, String unidad
                 .build();
     }
 
-    public static Atendimento toFila(AtendimentoDTO atendimentoDTO, String topic){
-        return new Atendimento.AtendimentoBuilder()
-                .withConsulta(ConsultaDTO.to(atendimentoDTO.consulta))
-                .withFluxo(Fluxo.valueOf(topic))
-                .withUnidade(new Unidade.UnidadeBuilder().withIdUnidade(atendimentoDTO.unidade()).build())
-                .withUsuario(new Usuario.UsuarioBuilder().withIdUsuario(atendimentoDTO.usuario()).build())
-                .withIdAtendimento(atendimentoDTO.idAtendimento())
-                .build();
+    public static AtendimentoDTO from(Atendimento atendimento){
+        return new AtendimentoDTO(
+                atendimento.getIdAtendimento(),
+                atendimento.getUsuario().getIdUsuario(),
+                atendimento.getUnidade().getIdUnidade(),
+                atendimento.getFluxoAtendimento().name(),
+                ConsultaDTO.from(atendimento.getConsulta())
+        );
     }
 }

@@ -10,4 +10,5 @@ public interface AtendimentoRepository {
     Atendimento buscar (String idAtendimento);
     Atendimento cancelar (String idAtendimento);
     List<Atendimento> listar ();
+    Atendimento marcar (Atendimento atendimento, List<String> exames);
 }

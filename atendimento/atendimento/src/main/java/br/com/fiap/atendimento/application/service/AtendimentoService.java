@@ -8,6 +8,8 @@ import br.com.fiap.atendimento.application.usecase.inbound.cancelar.CancelarOutp
 import br.com.fiap.atendimento.application.usecase.inbound.gerar.GerarInput;
 import br.com.fiap.atendimento.application.usecase.inbound.gerar.GerarOutput;
 import br.com.fiap.atendimento.application.usecase.inbound.listar.ListarOutput;
+import br.com.fiap.atendimento.application.usecase.inbound.marcar.MarcarInput;
+import br.com.fiap.atendimento.application.usecase.inbound.marcar.MarcarOutput;
 import br.com.fiap.atendimento.application.usecase.outbound.AtendimentoRepository;
 
 import java.util.List;
@@ -44,5 +46,10 @@ public class AtendimentoService implements AtendimentoPort {
         return atendimentoRepository.listar().stream()
                 .map(ListarOutput::from)
                 .toList();
+    }
+
+    @Override
+    public MarcarOutput marcar(MarcarInput input) {
+        return MarcarOutput.from(atendimentoRepository.marcar(input.atendimento(), input.exames()));
     }
 }

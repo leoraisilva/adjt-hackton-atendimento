@@ -11,4 +11,12 @@ public record ExameDTO (String idExame, String area, String especialista) {
                 .withEspecialista(new Especialista.EspecialistaBuilder().withIdEspecialista(exameDTO.especialista()).build())
                 .build();
     }
+
+    public static ExameDTO from (Exame exame) {
+        return new ExameDTO(
+                exame.getIdExame(),
+                exame.getArea(),
+                exame.getEspecialista().getIdEspecialista()
+        );
+    }
 }

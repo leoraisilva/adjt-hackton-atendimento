@@ -22,4 +22,13 @@ public record ConsultaDTO (String idConsulta, String responsavel, String descric
                 )
                 .build();
     }
+
+    public static ConsultaDTO from (Consulta consulta) {
+        return new ConsultaDTO(
+                consulta.getIdConsulta(),
+                consulta.getResponsavel().getIdEspecialista(),
+                consulta.getDescricao(),
+                consulta.getExames().stream().map(ExameDTO::from).toList()
+        );
+    }
 }

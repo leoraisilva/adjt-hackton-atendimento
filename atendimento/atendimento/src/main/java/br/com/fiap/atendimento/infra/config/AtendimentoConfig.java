@@ -9,6 +9,8 @@ import br.com.fiap.atendimento.application.usecase.inbound.cancelar.Cancelar;
 import br.com.fiap.atendimento.application.usecase.inbound.gerar.Gerar;
 import br.com.fiap.atendimento.application.usecase.inbound.listar.Listar;
 import br.com.fiap.atendimento.application.usecase.outbound.AtendimentoRepository;
+import br.com.fiap.atendimento.infra.addapter.event.consumer.ConsumerFila;
+import br.com.fiap.atendimento.infra.addapter.event.producer.EventFila;
 import br.com.fiap.atendimento.infra.addapter.gateway.AtendimentoImplRepository;
 import br.com.fiap.atendimento.infra.addapter.inbound.fetch.EspecialistaFetch;
 import br.com.fiap.atendimento.infra.addapter.inbound.fetch.RedeAtencaoFetch;
@@ -56,8 +58,8 @@ public class AtendimentoConfig {
     }
 
     @Bean
-    AtendimentoRepository atendimentoRepository(IAtendimentoMapper atendimentoMapper, AtendimentoJpaRepository atendimentoJpaRepository, ConsultaJpaRepository consultaJpaRepository, ExameJpaRepository exameJpaRepository, UsuarioFetch usuarioFetch, EspecialistaFetch especialistaFetch, RedeAtencaoFetch redeAtencaoFetch) {
-        return new AtendimentoImplRepository(atendimentoMapper, atendimentoJpaRepository, consultaJpaRepository, exameJpaRepository, usuarioFetch, especialistaFetch, redeAtencaoFetch);
+    AtendimentoRepository atendimentoRepository(IAtendimentoMapper atendimentoMapper, AtendimentoJpaRepository atendimentoJpaRepository, ConsultaJpaRepository consultaJpaRepository, ExameJpaRepository exameJpaRepository, UsuarioFetch usuarioFetch, EspecialistaFetch especialistaFetch, RedeAtencaoFetch redeAtencaoFetch, EventFila event, ConsumerFila consumer) {
+        return new AtendimentoImplRepository(atendimentoMapper, atendimentoJpaRepository, consultaJpaRepository, exameJpaRepository, usuarioFetch, especialistaFetch, redeAtencaoFetch, event, consumer);
     }
 
     @Bean

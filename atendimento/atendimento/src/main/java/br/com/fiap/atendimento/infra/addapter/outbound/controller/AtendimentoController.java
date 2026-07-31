@@ -12,7 +12,11 @@ import br.com.fiap.atendimento.application.usecase.inbound.gerar.GerarInput;
 import br.com.fiap.atendimento.application.usecase.inbound.gerar.GerarOutput;
 import br.com.fiap.atendimento.application.usecase.inbound.listar.Listar;
 import br.com.fiap.atendimento.application.usecase.inbound.listar.ListarOutput;
+import br.com.fiap.atendimento.application.usecase.inbound.marcar.Marcar;
+import br.com.fiap.atendimento.application.usecase.inbound.marcar.MarcarInput;
+import br.com.fiap.atendimento.application.usecase.inbound.marcar.MarcarOutput;
 import br.com.fiap.atendimento.infra.addapter.inbound.dto.AtendimentoDTO;
+import br.com.fiap.atendimento.infra.addapter.inbound.dto.MarcarDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,13 +31,15 @@ public class AtendimentoController {
     private final Gerar gerar;
     private final Cancelar cancelar;
     private final Atualizar atualizar;
+    private final Marcar marcar;
 
-    public AtendimentoController(Listar listar, Buscar buscar, Gerar gerar, Cancelar cancelar, Atualizar atualizar) {
+    public AtendimentoController(Listar listar, Buscar buscar, Gerar gerar, Cancelar cancelar, Atualizar atualizar, Marcar marcar) {
         this.listar = listar;
         this.buscar = buscar;
         this.gerar = gerar;
         this.cancelar = cancelar;
         this.atualizar = atualizar;
+        this.marcar = marcar;
     }
 
     @GetMapping("/listar")
@@ -59,5 +65,10 @@ public class AtendimentoController {
     @DeleteMapping("/cancelar/{id}")
     ResponseEntity<CancelarOutput> cancelar (@PathVariable(value = "id") String id) {
         return ResponseEntity.status(HttpStatus.OK).body(cancelar.cancelar(id));
+    }
+
+    @PutMapping("/marcar")
+    ResponseEntity<MarcarOutput> marcar (@RequestBody MarcarDTO marcarDTO) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(marcar.marcar(MarcarInput.to(AtendimentoDTO.to(marcarDTO.atendimentoDTO()), marcarDTO.exames())));
     }
 }
