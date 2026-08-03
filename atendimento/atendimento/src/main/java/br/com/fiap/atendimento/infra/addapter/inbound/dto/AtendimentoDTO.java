@@ -8,6 +8,14 @@ import br.com.fiap.atendimento.application.domain.usuario.Usuario;
 
 public record AtendimentoDTO(String idAtendimento, String usuario, String unidade, String fluxoAtendimento, ConsultaDTO consulta) {
     public static Atendimento to(AtendimentoDTO atendimentoDTO){
+        if(atendimentoDTO.consulta == null){
+            return new Atendimento.AtendimentoBuilder()
+                    .withFluxo(Fluxo.valueOf(atendimentoDTO.fluxoAtendimento()))
+                    .withUnidade(new Unidade.UnidadeBuilder().withIdUnidade(atendimentoDTO.unidade()).build())
+                    .withUsuario(new Usuario.UsuarioBuilder().withIdUsuario(atendimentoDTO.usuario()).build())
+                    .withIdAtendimento(atendimentoDTO.idAtendimento())
+                    .build();
+        }
         return new Atendimento.AtendimentoBuilder()
                 .withConsulta(ConsultaDTO.to(atendimentoDTO.consulta))
                 .withFluxo(Fluxo.valueOf(atendimentoDTO.fluxoAtendimento()))

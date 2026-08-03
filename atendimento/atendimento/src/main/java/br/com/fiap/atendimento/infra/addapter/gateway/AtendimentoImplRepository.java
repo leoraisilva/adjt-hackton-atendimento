@@ -63,7 +63,17 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
         );
 
         var atendimentoMessage = atendimentoMapper.toDomain(atendimentoJpaRepository.save(atendimentoEntity), usuario, unidade, null, null);
-        event.enviar(Fluxo.GERAR.name(),  atendimentoMessage);
+        var marcarDTO = new MarcarDTO(
+                new AtendimentoDTO(
+                        atendimentoMessage.getIdAtendimento(),
+                        atendimentoMessage.getUsuario().getIdUsuario(),
+                        atendimentoMessage.getUnidade().getIdUnidade(),
+                        atendimentoMessage.getFluxoAtendimento().name(),
+                        null
+                ),
+                null
+        );
+        event.enviar(Fluxo.GERAR.name(),  marcarDTO);
         return atendimentoMessage;
     }
 
@@ -220,7 +230,7 @@ public class AtendimentoImplRepository implements AtendimentoRepository {
         var unidade = UnidadeDTO.to(redeAtencaoFetch.buscarUnidade(atendimentoEntity.getIdUnidade()).unidade());
         var especialista = EspecialistaDTO.to(especialistaFetch.buscar(atendimentoEntity.getConsulta().getResponsavel()));
         var fila = new MarcarDTO(AtendimentoDTO.from(atendimentoMapper.toDomain(atendimentoEntity, usuario, unidade, especialista, null)), exames);
-        event.enviar(Fluxo.EXAME.name(),  String.valueOf(fila));
+        // event.enviar(Fluxo.EXAME.name(),  String.valueOf(fila));
         return atendimentoMapper.toDomain(atendimentoEntity, usuario, unidade, especialista, null);
     }
 
